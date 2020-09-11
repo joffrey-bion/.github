@@ -19,7 +19,7 @@ find some more guidance about what to put in there.
 Pull-requests are always welcome, but they might be redundant with (or superseded by) some work I'm currently doing on
  the project.
  
-If you have an idea for a feature or a bug to report, please first open an issue so we can discuss it before actually
+If you have an idea for a feature or a bug to report, please first open an issue, so we can discuss it before actually
 making code changes. If you're willing to help, I really wouldn't want you to waste your valuable time.
  
 ## Code style
