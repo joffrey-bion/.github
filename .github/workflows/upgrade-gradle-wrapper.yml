@@ -1,0 +1,42 @@
+name: Gradle Auto-update
+
+on:
+  workflow_call:
+    secrets:
+      GH_PAT:
+        required: false
+
+jobs:
+  upgrade-gradle-wrapper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Upgrade Gradle Wrapper to latest
+        id: gradle-upgrade
+        run: |
+          versionJson=$(curl https://services.gradle.org/versions/current)
+          latestVersion=$(echo $versionJson | jq -r .version)
+          checksumUrl=$(echo $versionJson | jq -r .checksumUrl)
+          checksum=$(curl -L $checksumUrl)
+          
+          ./gradlew wrapper --gradle-version $latestVersion --gradle-distribution-sha256-sum $checksum
+          ./gradlew wrapper --gradle-version $latestVersion --gradle-distribution-sha256-sum $checksum
+          
+          echo "::set-output name=version::$latestVersion"
+
+      - name: Create pull-request
+        uses: peter-evans/create-pull-request@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }} # using personal token to trigger CI build
+        with:
+          branch: "gradlew-update"
+          author: "Gradle Update Workflow <gradle-updater@users.noreply.github.com>"
+          committer: "Gradle Update Workflow <gradle-updater@users.noreply.github.com>"
+          commit-message: "Upgrade Gradle Wrapper to ${{ steps.gradle-upgrade.outputs.version }}"
+          title: "Upgrade Gradle Wrapper to ${{ steps.gradle-upgrade.outputs.version }}"
+          labels: internal
+          body: |
+            This PR updates the Gradle Wrapper to the latest version found in
+            [the Gradle feed](https://services.gradle.org/versions/current).
